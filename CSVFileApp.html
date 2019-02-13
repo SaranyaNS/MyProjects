@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<HTML>
+<title>CSV APPLICATION</title>
+<script type="text/javascript"
+	src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.9/angular.min.js"></script>
+<script type="text/javascript"
+	src="https://cdnjs.cloudflare.com/ajax/libs/danialfarid-angular-file-upload/12.2.13/ng-file-upload.min.js"></script>
+<script type="text/javascript">
+   /*
+   An application called CSVFileApp is created and a controller CSVFileController is added to it
+   */
+      var app = angular.module('CSVFileApp', ['ngFileUpload'])
+      app.controller('CSVFileController', function ($scope, $window) {
+          $scope.SelectFile = function (file) {
+              $scope.SelectedFile = file;
+          };
+		  /* variable uploadCheck is used to show the search count textbox which gets enabled 
+		  only after upload button clicked is true */
+      $scope.uploadCheck = false;
+	  /*
+	  Function to clear the warning and error alerts
+	  */
+      var clearAlerts = function() {
+        $scope.error = {}, $scope.warning = null
+        };
+		/*
+		Function to get file and read its contents and displaying it on the browser 
+		in a table format
+		*/
+          $scope.Upload = function () {
+              var regex = /^([a-zA-Z0-9\s_\\.\-:])+(.csv|.txt)$/;
+              if (regex.test($scope.SelectedFile.name.toLowerCase())) {
+                  if (typeof (FileReader) != "undefined") {
+                      var reader = new FileReader();
+                      reader.onload = function (e) {
+                          var customers = new Array();
+                          var rows = e.target.result.split("\r\n");
+                          for (var i = 1; i < rows.length; i++) {
+                              var cells = rows[i].split(",");
+                              if (cells.length > 1) {
+                                  var customer = {};
+                                  customer.FirstName = cells[0].toString().replace(/"/g, "");
+                                  customer.SurName = cells[1].toString().replace(/"/g, "");
+                                  customer.IssueCount = cells[2].toString().replace(/"/g, "");
+      				customer.DOB = cells[3].toString().replace(/"/g, "");
+                                  customers.push(customer);
+                                  $scope.$apply(function () {
+                                      $scope.Customers = customers;
+                                      $scope.IsVisible = true;
+                                  });
+                              }
+                          }
+      
+                      }
+                      reader.readAsText($scope.SelectedFile);
+      	$scope.uploadCheck = true;
+                  } else {
+                      $window.alert("This browser does not support HTML5.");
+                  }
+              } else {
+                  $window.alert("Please upload a valid CSV file.");
+              }
+      document.getElementById('fileVal').value="";
+          }
+		  /*
+		  Function to clear the file name in the place holder after selecting the file 
+		  to upload
+		  */
+      $scope.myFunction = function() {
+      var input, filter, table, tr, td, i, txtValue;
+      input = document.getElementById("myInput");
+      filter = input.value;
+      table = document.getElementById("tblCustomers");
+      tr = table.getElementsByTagName("tr");
+      for (i = 0; i < tr.length; i++) {
+      td = tr[i].getElementsByTagName("td")[2];
+      if (td) {
+        txtValue = td.textContent || td.innerText;
+        if (txtValue.indexOf(filter) > -1) {
+          tr[i].style.display = "";
+        } else {
+          tr[i].style.display = "none";
+        }
+      }       
+      }
+      }
+      });
+   </script>
+<body ng-app="CSVFileApp" ng-controller="CSVFileController">
+	<div>
+		<hr>
+		<h3>Please select a File to Import</h3>
+		</hr>
+		<input type="file" id="fileVal" ngf-select="SelectFile($file)" /> <input
+			type="button" value="Upload" ng-click="Upload()" />
+		<hr />
+		<input type="text" id="myInput" ng-keyup="myFunction()"
+			placeholder="Search for IssueCount.." title="Type in a count"
+			ng-show="uploadCheck">
+		<table border="1" id="tblCustomers" cellpadding="7" cellspacing="0"
+			ng-show="IsVisible">
+			<tr>
+				<th>First name</th>
+				<th>sur name</th>
+				<th>Issue count</th>
+				<th>Date of birth</th>
+			</tr>
+			<tbody ng-repeat="m in Customers">
+				<tr>
+					<td>{{m.FirstName}}</td>
+					<td>{{m.SurName}}</td>
+					<td>{{m.IssueCount}}</td>
+					<td>{{m.DOB}}</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</body>
+</HTML>
+
